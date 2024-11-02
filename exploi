@@ -1,120 +1,171 @@
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
-local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
-local Window = Fluent:CreateWindow({
-    Title = "Fluent " .. Fluent.Version,
-    SubTitle = "by dawid",
-    TabWidth = 160,
-    Size = UDim2.fromOffset(580, 460),
-    Acrylic = true,
-    Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.LeftControl
-})
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MobileInterface"
+screenGui.Parent = playerGui
 
-local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
-    LobbyMapa = Window:AddTab({ Title = "Lobby/Mapa", Icon = "map" }) -- Nova aba
-}
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0.3, 0, 0.5, 0)
+mainFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
+mainFrame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+mainFrame.BackgroundTransparency = 0.8
+mainFrame.Parent = screenGui
 
-local Options = Fluent.Options
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = mainFrame
 
--- Função para teletransportar o jogador para o lobby
-local function TeleportToLobby()
-    local player = game.Players.LocalPlayer
-    local lobbyPosition = Vector3.new(0, 50, 0) -- Substitua com a posição real do lobby
-    player.Character:MoveTo(lobbyPosition)
-end
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0.1, 0)
+titleLabel.Text = "Início"
+titleLabel.TextColor3 = Color3.new(1, 1, 1)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextScaled = true
+titleLabel.Parent = mainFrame
 
--- Função para teletransportar o jogador para o mapa
-local function TeleportToMap()
-    local player = game.Players.LocalPlayer
-    local mapPosition = Vector3.new(100, 50, 100) -- Substitua com a posição real do mapa
-    player.Character:MoveTo(mapPosition)
-end
+local playerIcon = Instance.new("ImageLabel")
+playerIcon.Size = UDim2.new(0.2, 0, 0.1, 0)
+playerIcon.Position = UDim2.new(0, 0, 0.1, 0)
+playerIcon.BackgroundTransparency = 1
+playerIcon.Image = "rbxassetid://your_image_id"
+playerIcon.Parent = mainFrame
 
--- Função para dar um balão ao jogador
-local function GiveBalloon()
-    local player = game.Players.LocalPlayer
-    local balloon = Instance.new("Part") -- Cria um novo objeto de balão
-    balloon.Size = Vector3.new(1, 1, 1) -- Tamanho do balão
-    balloon.BrickColor = BrickColor.new("Bright red") -- Cor do balão
-    balloon.Material = Enum.Material.Neon -- Material do balão
-    balloon.Anchored = true
-    balloon.CanCollide = false
-    balloon.Position = player.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0) -- Posição acima do jogador
-    balloon.Parent = workspace
+local playerNameLabel = Instance.new("TextLabel")
+playerNameLabel.Size = UDim2.new(0.8, 0, 0.1, 0)
+playerNameLabel.Position = UDim2.new(0.25, 0, 0.1, 0)
+playerNameLabel.Text = player.Name
+playerNameLabel.TextColor3 = Color3.new(1, 1, 1)
+playerNameLabel.BackgroundTransparency = 1
+playerNameLabel.Font = Enum.Font.Gotham
+playerNameLabel.TextScaled = true
+playerNameLabel.Parent = mainFrame
 
-    -- Função para aplicar a gravidade reduzida
-    local function ApplyBalloonEffect()
-        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.JumpPower = 100 -- Aumenta o poder do salto
-            humanoid.PlatformStand = true -- Impede que o jogador caia rapidamente
-
-            -- Espera um tempo para permitir o efeito do balão
-            wait(5) -- O efeito dura 5 segundos
-
-            humanoid.JumpPower = 50 -- Restaura o poder do salto
-            humanoid.PlatformStand = false -- Permite que o jogador caia normalmente
-            balloon:Destroy() -- Remove o balão após o uso
+local function noclip()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    
+    if humanoid then
+        humanoid.PlatformStand = true
+        for _, part in pairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
         end
     end
-
-    ApplyBalloonEffect()
-    Fluent:Notify({
-        Title = "Sucesso!",
-        Content = "Você recebeu um balão!",
-        Duration = 5
-    })
 end
 
--- Adicionando botões na aba Lobby/Mapa
-Tabs.LobbyMapa:AddButton({
-    Title = "Teleportar para Lobby",
-    Description = "Teleporta você para o lobby.",
-    Callback = function()
-        TeleportToLobby()
+local function fly()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    
+    if humanoid then
+        humanoid.PlatformStand = true
+        local bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.Velocity = Vector3.new(0, 50, 0)
+        bodyVelocity.MaxForce = Vector3.new(0, math.huge, 0)
+        bodyVelocity.Parent = character:FindFirstChild("HumanoidRootPart")
     end
-})
-
-Tabs.LobbyMapa:AddButton({
-    Title = "Teleportar para Mapa",
-    Description = "Teleporta você para o mapa.",
-    Callback = function()
-        TeleportToMap()
-    end
-})
-
-Tabs.LobbyMapa:AddButton({
-    Title = "Receber Balão",
-    Description = "Receba um balão que aumenta seu salto.",
-    Callback = function()
-        GiveBalloon()
-    end
-})
-
--- O restante do seu código permanece aqui
-do
-    Fluent:Notify ({
-        Title = "Notification",
-        Content = "This is a notification",
-        SubContent = "SubContent",
-        Duration = 5
-    })
-
-    -- ... (o restante do seu código)
 end
 
--- Adicione o restante do seu código aqui, como gerenciadores e configurações
+local function fling()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local target = game.Workspace:FindFirstChild("Target")
+    if target then
+        local direction = (target.Position - character.PrimaryPart.Position).unit
+        character:FindFirstChild("HumanoidRootPart").Velocity = direction * 100
+    end
+end
 
-Window:SelectTab(1)
+local function createButton(text, position, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, 0, 0.2, 0)
+    button.Position = position
+    button.Text = text
+    button.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+    button.BackgroundTransparency = 0.8
+    button.Font = Enum.Font.GothamBold
+    button.TextScaled = true
+    button.Parent = mainFrame
+    button.MouseButton1Click:Connect(callback)
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = button
+    
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.new(0.5, 0.5, 0.5)
+    stroke.Parent = button
+ end
 
-Fluent:Notify({
-    Title = "Fluent",
-    Content = "The script has been loaded.",
-    Duration = 8
-})
+createButton("Noclip", UDim2.new(0, 0, 0.1, 0), noclip)
+createButton("Fly", UDim2.new(0, 0, 0.4, 0), fly)
+createButton("Fling ", UDim2.new(0, 0, 0.7, 0), fling)
 
-SaveManager:LoadAutoloadConfig()
+-- Criar aba "Players"
+local playersFrame = Instance.new("Frame")
+playersFrame.Size = UDim2.new(0.3, 0, 0.5, 0)
+playersFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
+playersFrame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+playersFrame.BackgroundTransparency = 0.8
+playersFrame.Parent = screenGui
+
+local playersCorner = Instance.new("UICorner")
+playersCorner.CornerRadius = UDim.new(0, 10)
+playersCorner.Parent = playersFrame
+
+local playersTitleLabel = Instance.new("TextLabel")
+playersTitleLabel.Size = UDim2.new(1, 0, 0.1, 0)
+playersTitleLabel.Text = "Players"
+playersTitleLabel.TextColor3 = Color3.new(1, 1, 1)
+playersTitleLabel.BackgroundTransparency = 1
+playersTitleLabel.Font = Enum.Font.GothamBold
+playersTitleLabel.TextScaled = true
+playersTitleLabel.Parent = playersFrame
+
+local playersList = Instance.new("ScrollingFrame")
+playersList.Size = UDim2.new(1, 0, 0.8, 0)
+playersList.Position = UDim2.new(0, 0, 0.1, 0)
+playersList.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+playersList.BackgroundTransparency = 0.8
+playersList.Parent = playersFrame
+
+local function createPlayerButton(player)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, 0, 0.1, 0)
+    button.Text = player.Name
+    button.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+    button.BackgroundTransparency = 0.8
+    button.Font = Enum.Font.GothamBold
+    button.TextScaled = true
+    button.Parent = playersList
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = button
+    
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.new(0.5, 0.5, 0.5)
+    stroke.Parent = button
+    
+    button.MouseButton1Click:Connect(function()
+        local character = player.Character or player.CharacterAdded:Wait()
+        if character then
+            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+            if humanoidRootPart then
+                player.Character.HumanoidRootPart.CFrame = humanoidRootPart.CFrame
+            end
+        end
+    end)
+end
+
+for _, player in pairs(game.Players:GetPlayers()) do
+    if player ~= game.Players.LocalPlayer then
+        createPlayerButton(player)
+    end
+end
+
+game.Players.PlayerAdded:Connect(function(player)
+    createPlayerButton(player)
+end)
